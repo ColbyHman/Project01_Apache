@@ -33,17 +33,15 @@ async def get_messages(writer,reader):
     loop = asyncio.get_running_loop()
 
     while not writer.is_closing():
+        loop.create_task(receive_messages(reader))
         try:
-            await receive_messages(reader)
-        finally:
-            try:
-                message = await loop.run_in_executor(None,input)
-                writer = await send_message(writer,message)
-            except:
-                pass
+            message = await loop.run_in_executor(None,input)
+            writer = loop.create_task(send_message(writer,message))
+        except:
+            pass
 
 async def tcp_client():
-    reader, writer = await asyncio.open_connection("apache.cslab.moravian.edu", 25565)
+    reader, writer = await asyncio.open_connection("apache", 25565)
     name_taken = True
 
     #checking the  version number 
@@ -75,3 +73,6 @@ async def tcp_client():
     asyncio.create_task(get_messages(writer,reader))   
         
 asyncio.run(tcp_client())
+    
+    
+    
