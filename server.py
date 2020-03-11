@@ -47,13 +47,12 @@ async def send_messages(username, reader):
                     await send_str(message[2], user_writer)
             except:
                 pass
-    finally:
+    except:
         print(username,"is disconnecting!")
         user_writer = users.get(username)
         user_writer.close()
         await user_writer.wait_closed()
         print(username,"disconnected!")
-        break
         user_writer = users.pop(username)
         print(username,"closed!")
 
@@ -113,7 +112,9 @@ async def handle_connection(reader, writer):
             time = item[2]
             await send_str(time,writer)
             
-    asyncio.create_task(send_messages(username, reader))
+    loop = asyncio.get_running_loop()
+    loop.create_task(send_messages(username, reader))
+
 
     
     
