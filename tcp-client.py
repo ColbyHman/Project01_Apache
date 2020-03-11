@@ -1,5 +1,6 @@
 import struct
 import asyncio
+import argparse
 
 async def receive_str(reader):
     length = await reader.read(struct.calcsize('<i'))
@@ -16,32 +17,45 @@ async def send_str(string,writer):
     await writer.drain()
 
 async def receive_messages(reader):
-    name = await receive_str(reader)
-    message = await receive_str(reader)
-    time = await receive_str(reader)
+    while True:
+        try:
+            name    = await receive_str(reader)
+            message = await receive_str(reader)
+            time    = await receive_str(reader)
+            print(name,"-",time+":",message)
+        except struct.error:
+            break
 
-    print(name,"-",time+":",message)
-
-async def send_message(writer,message):
-    if not message:
-        writer.close()
-        return writer
-    await send_str(message,writer)
-    return writer
-
-async def get_messages(writer,reader):
+async def send_message(writer):
     loop = asyncio.get_running_loop()
-
-    while not writer.is_closing():
-        loop.create_task(receive_messages(reader))
+    while True:
         try:
             message = await loop.run_in_executor(None,input)
-            writer = loop.create_task(send_message(writer,message))
+            if not message:
+                writer.close()
+                break
+            await send_str(message,writer)
         except:
             pass
 
-async def tcp_client():
-    reader, writer = await asyncio.open_connection("apache", 25565)
+async def get_messages(writer,reader):
+
+    # loop that does rececing messages 
+    # sending messages as well
+    # two coroutines at the same time
+    # infinte loop for both  
+    # create two task 
+    send_task    =  asyncio.create_task(send_message(writer))   
+    receive_task =  asyncio.create_task(receive_messages(reader))
+    await send_task
+    receive_task.cancel()
+    try: 
+        await receive_task    
+    except asyncio.CancelledError: 
+        pass
+
+async def client(address,port):
+    reader, writer = await asyncio.open_connection(address, port)
     name_taken = True
 
     #checking the  version number 
@@ -68,11 +82,21 @@ async def tcp_client():
     number_of_messages = struct.unpack('<i', number_of_messages)[0]
 
     for _ in range(number_of_messages): 
-        await receive_messages(reader)
+        name = await receive_str(reader)
+        message = await receive_str(reader)
+        time = await receive_str(reader)
+        print(name,"-",time+":",message)
 
-    asyncio.create_task(get_messages(writer,reader))   
-        
-asyncio.run(tcp_client())
+    await asyncio.create_task(get_messages(writer,reader))  
+
+def main():
+    parser = argparse.ArgumentParser(description='Start the Chat Client')
+    parser.add_argument('address', help='Set the server address you want to connect to')
+    parser.add_argument('--port', type=int, help='Set the port number to use', default=25565)
     
+    args = parser.parse_args()
+    asyncio.run(client(args.address, args.port))
     
+if __name__ == "__main__":
+    main()
     
