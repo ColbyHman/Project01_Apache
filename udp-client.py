@@ -68,7 +68,7 @@ class UDPChatProgram(asyncio.DatagramProtocol):
         if(data == "!!"+self.name+"!!" and self.ip_addr != addr[0]):
             invalid_name = self.name+"||"+self.invalid
             self.transport.sendto(invalid_name.encode(), ('255.255.255.255', port))
-        elif(data == self.invalid):
+        elif(data == self.invalid and self.ip_addr != addr[0]):
             self.transport.close()
             print("This username is taken")
         else:
