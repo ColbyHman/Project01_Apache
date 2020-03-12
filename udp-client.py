@@ -7,6 +7,7 @@ port = 25566
 
 class UDPChatProgram(asyncio.DatagramProtocol):
     name = ""
+    invalid = '!!Invalid Username!!'
     def __init__(self):
         """
         This is the constructor for the Chat Program itself
@@ -53,7 +54,9 @@ class UDPChatProgram(asyncio.DatagramProtocol):
         """
         data = data.decode()
         name, data = data.split('||')
-        if(data == '!!Invalid Username!!'):
+        if(data == "!!"+self.name+"!!")
+            self.transport.sendto(self.invalid.encode(), ('255.255.255.255', port))
+        elif(data == invalid):
             self.transport.close()
             print("This username is taken")
         print(name,"-",strftime("%Y-%m-%d %H:%M:%S", gmtime())+":",data)
