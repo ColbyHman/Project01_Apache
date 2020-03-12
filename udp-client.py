@@ -13,13 +13,15 @@ class UDPChatProgram(asyncio.DatagramProtocol):
         """
         self.on_con_lost = asyncio.get_running_loop().create_future()
         self.name = input("Enter a username : ")
+        
 
     def connection_made(self, transport):
         """
         When the connection is created, this will start asking the user for messages
         """
         self.transport = transport
-
+        name_data = self.name+"||!!"+self.name+"!!"
+        self.transport.sendto(name_data.encode(), ('255.255.255.255', port))
         # Starts receiving messages as a task in the asyncio loop
         asyncio.create_task(self.receive_messages())
 
@@ -35,6 +37,7 @@ class UDPChatProgram(asyncio.DatagramProtocol):
             if not message:
                 self.transport.close()
                 break
+            message = self.name+"||"+message
             # Broadcast the message
             self.transport.sendto(message.encode(), ('255.255.255.255', port))
 
@@ -48,12 +51,12 @@ class UDPChatProgram(asyncio.DatagramProtocol):
         """
         Method called whenever a datagram is recieved.
         """
-
         data = data.decode()
+        name, data = data.split('||')
         if(data == '!!Invalid Username!!'):
             self.transport.close()
-            return "This username is taken"
-        return data
+            print("This username is taken")
+        print()
 
     def error_received(self, exc):
         """
