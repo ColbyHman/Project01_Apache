@@ -101,9 +101,10 @@ class UDPChatProgram(asyncio.DatagramProtocol):
             print("This username is taken")
 
         # All other messages will be filtered through here
-        elif(data != self.invalid):
-            self.add_message_to_history(name,"-",strftime("%Y-%m-%d %H:%M:%S", gmtime())+":",data)
-            print(name,"-",strftime("%Y-%m-%d %H:%M:%S", gmtime())+":",data)
+        elif(data != self.invalid and data[0:2] != "!!"):
+            message = str(name+" - "+strftime("%Y-%m-%d %H:%M:%S", gmtime())+": "+data)
+            self.add_message_to_history(message)
+            print(message)
 
     def error_received(self, exc):
         """
