@@ -88,4 +88,4 @@ async def main():
         transport.close()
 
 if __name__ == "__main__":
-    asyncio.r
+    asyncio.run(main())
