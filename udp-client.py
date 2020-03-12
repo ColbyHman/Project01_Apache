@@ -56,7 +56,7 @@ class UDPChatProgram(asyncio.DatagramProtocol):
         if(data == '!!Invalid Username!!'):
             self.transport.close()
             print("This username is taken")
-        print()
+        print(name,"-",strftime("%Y-%m-%d %H:%M:%S", gmtime())+":",data)
 
     def error_received(self, exc):
         """
@@ -88,4 +88,4 @@ async def main():
         transport.close()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.r
